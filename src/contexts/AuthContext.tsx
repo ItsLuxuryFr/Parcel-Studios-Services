@@ -91,16 +91,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       if (data.user) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
+          .update({
             display_name: displayName,
-            onboarding_completed: false,
-          });
+          })
+          .eq('id', data.user.id);
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error('Error updating profile:', profileError);
+        }
 
         await loadUserProfile(data.user);
         return { success: true };

@@ -16,7 +16,7 @@ export default function NewCommission() {
   const [submittedCommission, setSubmittedCommission] = useState<any>(null);
 
   const { user, isAuthenticated } = useAuth();
-  const { createCommission } = useCommissions();
+  const { createCommission, updateCommission } = useCommissions();
   const navigate = useNavigate();
 
   const complexityOptions = [
@@ -96,7 +96,9 @@ export default function NewCommission() {
         userId: user!.id,
       });
 
-      setSubmittedCommission(commission);
+      await updateCommission(commission.id, { status: 'submitted' });
+
+      setSubmittedCommission({ ...commission, status: 'submitted' });
       setStep(3);
     } catch (err) {
       setError('Failed to create commission. Please try again.');

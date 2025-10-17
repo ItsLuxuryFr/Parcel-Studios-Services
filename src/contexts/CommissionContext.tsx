@@ -1,84 +1,131 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Commission, TaskComplexity, CommissionStatus } from '../types';
-import { mockCommissions } from '../data/mockData';
+import { Commission } from '../types';
+import { supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
 
 interface CommissionContextType {
   commissions: Commission[];
+  isLoading: boolean;
   createCommission: (data: Omit<Commission, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status'>) => Promise<Commission>;
   updateCommission: (id: string, updates: Partial<Commission>) => Promise<void>;
   deleteCommission: (id: string) => Promise<void>;
   getUserCommissions: (userId: string) => Commission[];
   getCommissionById: (id: string) => Commission | undefined;
+  loadUserCommissions: () => Promise<void>;
 }
 
 const CommissionContext = createContext<CommissionContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'parcel_studio_commissions';
-
 export function CommissionProvider({ children }: { children: ReactNode }) {
   const [commissions, setCommissions] = useState<Commission[]>([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setCommissions(JSON.parse(stored));
-      } catch {
-        setCommissions(mockCommissions);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(mockCommissions));
-      }
-    } else {
-      setCommissions(mockCommissions);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(mockCommissions));
-    }
-  }, []);
-
-  const saveCommissions = (newCommissions: Commission[]) => {
-    setCommissions(newCommissions);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newCommissions));
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const createCommission = async (
     data: Omit<Commission, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status'>
   ): Promise<Commission> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const { data: insertedData, error } = await supabase
+      .from('commissions')
+      .insert({
+        user_id: data.userId,
+        task_complexity: data.taskComplexity,
+        subject: data.subject,
+        description: data.description,
+        proposed_amount: data.proposedAmount,
+        status: 'draft',
+      })
+      .select()
+      .single();
 
-    const now = new Date().toISOString();
-    const year = new Date().getFullYear();
-    const refNumber = `COM-${year}-${String(commissions.length + 1).padStart(3, '0')}`;
+    if (error) throw error;
 
     const newCommission: Commission = {
-      ...data,
-      id: `comm-${Date.now()}`,
-      status: 'draft',
-      createdAt: now,
-      updatedAt: now,
-      referenceNumber: refNumber,
+      id: insertedData.id,
+      userId: insertedData.user_id,
+      taskComplexity: insertedData.task_complexity,
+      subject: insertedData.subject,
+      description: insertedData.description,
+      proposedAmount: Number(insertedData.proposed_amount),
+      status: insertedData.status,
+      referenceNumber: insertedData.reference_number,
+      createdAt: insertedData.created_at,
+      updatedAt: insertedData.updated_at,
     };
 
-    const updated = [...commissions, newCommission];
-    saveCommissions(updated);
-
+    setCommissions(prev => [...prev, newCommission]);
     return newCommission;
   };
 
   const updateCommission = async (id: string, updates: Partial<Commission>) => {
-    await new Promise(resolve => setTimeout(resolve, 200));
+    const updateData: any = {};
+    if (updates.status) updateData.status = updates.status;
+    if (updates.taskComplexity) updateData.task_complexity = updates.taskComplexity;
+    if (updates.subject) updateData.subject = updates.subject;
+    if (updates.description) updateData.description = updates.description;
+    if (updates.proposedAmount !== undefined) updateData.proposed_amount = updates.proposedAmount;
 
-    const updated = commissions.map(comm =>
-      comm.id === id
-        ? { ...comm, ...updates, updatedAt: new Date().toISOString() }
-        : comm
+    const { error } = await supabase
+      .from('commissions')
+      .update(updateData)
+      .eq('id', id);
+
+    if (error) throw error;
+
+    setCommissions(prev =>
+      prev.map(comm =>
+        comm.id === id ? { ...comm, ...updates, updatedAt: new Date().toISOString() } : comm
+      )
     );
-
-    saveCommissions(updated);
   };
 
   const deleteCommission = async (id: string) => {
-    await new Promise(resolve => setTimeout(resolve, 200));
+    const { error } = await supabase
+      .from('commissions')
+      .delete()
+      .eq('id', id);
 
-    const updated = commissions.filter(comm => comm.id !== id);
-    saveCommissions(updated);
+    if (error) throw error;
+
+    setCommissions(prev => prev.filter(comm => comm.id !== id));
+  };
+
+  const loadUserCommissions = async () => {
+    setIsLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setCommissions([]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('commissions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mapped: Commission[] = (data || []).map(item => ({
+        id: item.id,
+        userId: item.user_id,
+        taskComplexity: item.task_complexity,
+        subject: item.subject,
+        description: item.description,
+        proposedAmount: Number(item.proposed_amount),
+        status: item.status,
+        referenceNumber: item.reference_number,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+      }));
+
+      setCommissions(mapped);
+    } catch (error) {
+      console.error('Error loading commissions:', error);
+      setCommissions([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getUserCommissions = (userId: string) => {
@@ -93,11 +140,13 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
     <CommissionContext.Provider
       value={{
         commissions,
+        isLoading,
         createCommission,
         updateCommission,
         deleteCommission,
         getUserCommissions,
         getCommissionById,
+        loadUserCommissions,
       }}
     >
       {children}

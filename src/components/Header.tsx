@@ -14,27 +14,27 @@ export default function Header() {
   };
 
   return (
-    <header className="glass-dark sticky top-0 z-50 border-b border-white/5">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+    <header className="glass-dark sticky top-0 z-50 border-b border-purple-500/10 backdrop-blur-2xl">
+      <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="relative">
-              <Package className="w-9 h-9 text-primary-400 group-hover:text-primary-300 transition-all group-hover:scale-110" />
-              <div className="absolute inset-0 bg-primary-400/20 blur-xl group-hover:bg-primary-400/30 transition-all" />
+              <Package className="w-8 h-8 text-purple-400 group-hover:text-purple-300 transition-all group-hover:scale-110" />
+              <div className="absolute inset-0 bg-purple-500/20 blur-xl group-hover:bg-purple-500/30 transition-all" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">Parcel Studio</span>
+            <span className="text-lg font-bold text-gradient">Parcel Studio</span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/portfolio"
-              className="text-gray-300 hover:text-white transition-all hover:scale-105 font-medium"
+              className="text-gray-400 hover:text-purple-300 transition-all font-medium text-sm"
             >
               Portfolio
             </Link>
             <Link
               to="/commissions"
-              className="text-gray-300 hover:text-white transition-all hover:scale-105 font-medium"
+              className="text-gray-400 hover:text-purple-300 transition-all font-medium text-sm"
             >
               Commissions
             </Link>
@@ -43,11 +43,11 @@ export default function Header() {
               <div className="relative">
                 <button
                   onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                  className="flex items-center space-x-2 text-gray-300 hover:text-white transition-all hover:scale-105 font-medium"
+                  className="flex items-center space-x-2 text-gray-400 hover:text-purple-300 transition-all font-medium text-sm"
                   aria-expanded={accountMenuOpen}
                   aria-haspopup="true"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-500/30">
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <span>{user?.displayName || 'Account'}</span>
@@ -59,10 +59,10 @@ export default function Header() {
                       className="fixed inset-0 z-10"
                       onClick={() => setAccountMenuOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-48 glass rounded-xl shadow-2xl py-2 z-20 animate-fade-in">
+                    <div className="absolute right-0 mt-2 w-48 glass rounded-xl shadow-2xl shadow-purple-500/20 py-2 z-20 animate-fade-in">
                       <Link
                         to="/profile"
-                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white transition-all mx-2 rounded-lg"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-purple-500/20 hover:text-purple-200 transition-all mx-2 rounded-lg"
                         onClick={() => setAccountMenuOpen(false)}
                       >
                         <User className="w-4 h-4" />
@@ -70,7 +70,7 @@ export default function Header() {
                       </Link>
                       <Link
                         to="/privacy"
-                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white transition-all mx-2 rounded-lg"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-purple-500/20 hover:text-purple-200 transition-all mx-2 rounded-lg"
                         onClick={() => setAccountMenuOpen(false)}
                       >
                         <Shield className="w-4 h-4" />
@@ -78,16 +78,16 @@ export default function Header() {
                       </Link>
                       <Link
                         to="/my-commissions"
-                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white transition-all mx-2 rounded-lg"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-purple-500/20 hover:text-purple-200 transition-all mx-2 rounded-lg"
                         onClick={() => setAccountMenuOpen(false)}
                       >
                         <Briefcase className="w-4 h-4" />
                         <span className="text-sm font-medium">My Commissions</span>
                       </Link>
-                      <div className="border-t border-white/10 my-2" />
+                      <div className="border-t border-purple-500/20 my-2" />
                       <button
                         onClick={handleLogout}
-                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white transition-all w-full text-left mx-2 rounded-lg"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-purple-500/20 hover:text-purple-200 transition-all w-full text-left mx-2 rounded-lg"
                       >
                         <LogOut className="w-4 h-4" />
                         <span className="text-sm font-medium">Log Out</span>
@@ -100,16 +100,15 @@ export default function Header() {
               <div className="flex items-center space-x-4">
                 <Link
                   to="/login"
-                  className="text-gray-300 hover:text-white transition-all hover:scale-105 font-medium"
+                  className="text-gray-400 hover:text-purple-300 transition-all font-medium text-sm"
                 >
                   Log In
                 </Link>
                 <Link
                   to="/signup"
-                  className="relative group bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white px-6 py-2.5 rounded-xl transition-all hover:scale-105 font-semibold shadow-lg hover:shadow-primary-500/50"
+                  className="btn-primary text-sm"
                 >
-                  <span className="relative z-10">Sign Up</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-accent-400 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
+                  Sign Up
                 </Link>
               </div>
             )}
@@ -125,7 +124,7 @@ export default function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-2 border-t border-white/10 animate-slide-up">
+          <div className="md:hidden py-4 space-y-2 border-t border-purple-500/10 animate-slide-up">
             <Link
               to="/portfolio"
               className="block text-gray-300 hover:text-white transition-colors py-2 font-medium"
@@ -191,7 +190,7 @@ export default function Header() {
                 </Link>
                 <Link
                   to="/signup"
-                  className="block bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white px-4 py-3 rounded-xl transition-all text-center font-semibold shadow-lg"
+                  className="btn-primary block text-center text-sm"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Sign Up

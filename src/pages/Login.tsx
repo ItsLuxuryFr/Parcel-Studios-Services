@@ -37,34 +37,33 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5" />
-      <div className="absolute inset-0" style={{
-        backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)',
-      }} />
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-purple-800/10" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
-      <div className="max-w-md w-full space-y-8 relative">
+      <div className="max-w-md w-full space-y-6 relative">
         <div className="text-center">
-          <Link to="/" className="inline-flex items-center space-x-3 mb-8 group">
+          <Link to="/" className="inline-flex items-center space-x-3 mb-6 group">
             <div className="relative">
-              <Package className="w-12 h-12 text-primary-400 group-hover:text-primary-300 transition-all group-hover:scale-110" />
-              <div className="absolute inset-0 bg-primary-400/20 blur-xl group-hover:bg-primary-400/30 transition-all" />
+              <Package className="w-10 h-10 text-purple-400 group-hover:text-purple-300 transition-all group-hover:scale-110" />
+              <div className="absolute inset-0 bg-purple-500/20 blur-xl group-hover:bg-purple-500/30 transition-all" />
             </div>
-            <span className="text-2xl font-bold text-white tracking-tight">Parcel Studio</span>
+            <span className="text-xl font-bold text-gradient">Parcel Studio</span>
           </Link>
-          <h2 className="text-4xl font-bold text-white mb-2">Welcome Back</h2>
-          <p className="text-gray-400">Sign in to your account</p>
+          <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+          <p className="text-gray-400 text-sm">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="glass-dark border border-red-500/30 rounded-xl p-4 flex items-start space-x-3 animate-slide-up">
+            <div className="glass-dark border border-red-500/30 rounded-lg p-3 flex items-start space-x-3 animate-slide-up">
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-300 mb-2">
                 Email Address
@@ -76,7 +75,7 @@ export default function Login() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full glass border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="input-field pl-12"
                   placeholder="you@example.com"
                   required
                 />
@@ -94,7 +93,7 @@ export default function Login() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full glass border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="input-field pl-12"
                   placeholder="••••••••"
                   required
                 />
@@ -105,14 +104,14 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 disabled:from-gray-700 disabled:to-gray-800 disabled:cursor-not-allowed text-white py-4 rounded-xl font-semibold transition-all hover:scale-[1.02] shadow-xl hover:shadow-primary-500/50"
+            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
 
-          <p className="text-center text-gray-400">
+          <p className="text-center text-gray-400 text-sm">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-primary-400 hover:text-primary-300 font-semibold transition-colors">
+            <Link to="/signup" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
               Sign Up
             </Link>
           </p>

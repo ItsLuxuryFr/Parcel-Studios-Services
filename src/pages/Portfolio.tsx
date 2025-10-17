@@ -11,39 +11,39 @@ export default function Portfolio() {
   };
 
   const colors = {
-    scripting: { bg: 'from-primary-500 to-primary-600', hover: 'primary-500', glow: 'primary-400' },
-    vfx: { bg: 'from-blue-500 to-blue-600', hover: 'blue-500', glow: 'blue-400' },
-    building: { bg: 'from-teal-500 to-teal-600', hover: 'teal-500', glow: 'teal-400' },
-    uiux: { bg: 'from-accent-500 to-accent-600', hover: 'accent-500', glow: 'accent-400' },
+    scripting: { bg: 'from-purple-600 to-purple-500', glow: 'purple-500' },
+    vfx: { bg: 'from-purple-500 to-purple-600', glow: 'purple-400' },
+    building: { bg: 'from-brown-600 to-brown-700', glow: 'brown-500' },
+    uiux: { bg: 'from-purple-400 to-purple-500', glow: 'purple-300' },
   };
 
   return (
-    <div className="min-h-screen bg-dark-950">
-      <div className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-transparent to-accent-500/10" />
+    <div className="min-h-screen">
+      <div className="relative py-16 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-purple-800/10" />
         <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
+          backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%)',
         }} />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-6">
-            <div className="inline-block mb-6">
-              <div className="flex items-center space-x-2 bg-white/5 backdrop-blur-sm border border-white/10 px-4 py-2 rounded-full">
-                <Star className="w-4 h-4 text-accent-400" />
-                <span className="text-sm text-gray-300 font-medium">Our Work</span>
+            <div className="inline-block mb-4">
+              <div className="flex items-center space-x-2 glass px-4 py-2 rounded-full">
+                <Star className="w-4 h-4 text-purple-400 fill-purple-400" />
+                <span className="text-sm text-purple-200 font-medium">Our Work</span>
               </div>
             </div>
 
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">Portfolio</h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Portfolio</h1>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Explore our work across scripting, VFX, building, and UI/UX design
             </p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {portfolioCategories.map((category) => {
             const Icon = icons[category.id];
             const color = colors[category.id];
@@ -52,11 +52,11 @@ export default function Portfolio() {
               <Link
                 key={category.id}
                 to={`/portfolio/${category.id}`}
-                className="group relative glass hover:bg-white/10 rounded-3xl p-10 transition-all hover:scale-[1.02] overflow-hidden"
+                className="group relative card p-8 transition-all hover:scale-[1.02] overflow-hidden"
               >
                 {category.featured && (
-                  <div className="absolute top-6 right-6 z-10">
-                    <div className="bg-gradient-to-r from-primary-500 to-accent-500 text-white text-xs px-3 py-1.5 rounded-full flex items-center space-x-1 font-semibold shadow-lg">
+                  <div className="absolute top-5 right-5 z-10">
+                    <div className="bg-gradient-to-r from-purple-600 to-purple-500 text-white text-xs px-2.5 py-1 rounded-full flex items-center space-x-1 font-semibold shadow-lg">
                       <Star className="w-3 h-3 fill-current" />
                       <span>Primary Expertise</span>
                     </div>
@@ -66,32 +66,28 @@ export default function Portfolio() {
                 <div className={`absolute inset-0 bg-gradient-to-br ${color.bg.replace('from-', 'from-').replace('to-', 'to-')}/5 opacity-0 group-hover:opacity-100 transition-opacity`} />
 
                 <div className="relative">
-                  <div className={`w-20 h-20 bg-gradient-to-br ${color.bg} rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-xl`}>
-                    <Icon className="w-10 h-10 text-white" />
+                  <div className={`w-16 h-16 bg-gradient-to-br ${color.bg} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-${color.glow}/30`}>
+                    <Icon className="w-8 h-8 text-white" />
                   </div>
 
-                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
                     {category.name}
                   </h2>
 
                   {category.experienceYears && (
-                    <div className="text-primary-400 font-semibold mb-4 text-sm">
+                    <div className="text-purple-400 font-semibold mb-3 text-xs">
                       {category.experienceYears} Years Experience
                     </div>
                   )}
 
-                  <p className="text-gray-400 mb-8 leading-relaxed text-lg">
+                  <p className="text-gray-400 mb-6 leading-relaxed text-sm">
                     {category.description}
                   </p>
 
-                  <div className="flex items-center text-primary-400 font-semibold group-hover:text-primary-300 transition-colors">
+                  <div className="flex items-center text-purple-400 font-semibold group-hover:text-purple-300 transition-colors text-sm">
                     <span>View Projects</span>
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform" />
                   </div>
-                </div>
-
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`}>
-                  <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-${color.hover}/20 rounded-full blur-3xl`} />
                 </div>
               </Link>
             );

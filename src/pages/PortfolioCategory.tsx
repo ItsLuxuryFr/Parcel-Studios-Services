@@ -10,10 +10,10 @@ export default function PortfolioCategory() {
 
   if (!category) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white mb-4">Category Not Found</h1>
-          <Link to="/portfolio" className="text-emerald-400 hover:text-emerald-300">
+          <Link to="/portfolio" className="text-purple-400 hover:text-purple-300">
             Back to Portfolio
           </Link>
         </div>
@@ -22,34 +22,35 @@ export default function PortfolioCategory() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      <div className="bg-gradient-to-r from-emerald-500 to-blue-500 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen">
+      <div className="relative bg-gradient-to-r from-purple-900/40 to-purple-800/40 py-12 border-b border-purple-500/20">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <Link
             to="/portfolio"
-            className="inline-flex items-center text-white/90 hover:text-white mb-6 transition-colors"
+            className="inline-flex items-center text-purple-300 hover:text-purple-200 mb-6 transition-colors text-sm"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Portfolio
           </Link>
 
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-5xl font-bold text-white mb-3 flex items-center">
+              <h1 className="text-4xl font-bold text-white mb-2 flex items-center">
                 {category.name}
                 {category.featured && (
-                  <span className="ml-4 bg-white/20 text-white text-sm px-3 py-1 rounded-full flex items-center">
-                    <Star className="w-4 h-4 mr-1 fill-current" />
+                  <span className="ml-4 bg-purple-500/20 text-purple-200 text-xs px-3 py-1 rounded-full flex items-center border border-purple-500/30">
+                    <Star className="w-3 h-3 mr-1 fill-current" />
                     Primary Expertise
                   </span>
                 )}
               </h1>
               {category.experienceYears && (
-                <div className="text-white/90 text-lg mb-2">
+                <div className="text-purple-300 text-sm mb-2 font-semibold">
                   {category.experienceYears} Years of Professional Experience
                 </div>
               )}
-              <p className="text-xl text-white/80">
+              <p className="text-lg text-gray-400">
                 {category.description}
               </p>
             </div>
@@ -57,11 +58,11 @@ export default function PortfolioCategory() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {category.featured && (
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 mb-12">
-            <h2 className="text-2xl font-bold text-emerald-400 mb-2">Featured Category</h2>
-            <p className="text-slate-300">
+          <div className="glass border-purple-500/30 rounded-xl p-5 mb-10">
+            <h2 className="text-xl font-bold text-purple-300 mb-2">Featured Category</h2>
+            <p className="text-gray-400 text-sm">
               Scripting is my primary expertise with 4 years of professional experience creating complex game systems,
               mechanics, and tools for Roblox games. From combat systems to inventory management, I specialize in
               writing clean, optimized, and maintainable code that scales with your game.
@@ -69,16 +70,16 @@ export default function PortfolioCategory() {
           </div>
         )}
 
-        <div className="mb-8">
+        <div className="mb-6">
           <h2 className="text-2xl font-bold text-white mb-2">
             Projects ({projects.length})
           </h2>
-          <p className="text-slate-400">
+          <p className="text-gray-400 text-sm">
             Click on any project to expand and view detailed information, demos, and images.
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5">
           {projects.map(project => (
             <ProjectCard key={project.id} project={project} />
           ))}
@@ -86,7 +87,7 @@ export default function PortfolioCategory() {
 
         {projects.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-slate-400 text-lg">No projects in this category yet.</p>
+            <p className="text-gray-400 text-lg">No projects in this category yet.</p>
           </div>
         )}
       </div>

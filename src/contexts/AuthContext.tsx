@@ -1,107 +1,144 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 import { User, AuthContextType } from '../types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const STORAGE_KEY = 'parcel_studio_user';
-const USERS_KEY = 'parcel_studio_users';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem(STORAGE_KEY);
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        loadUserProfile(session.user);
+      } else {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        loadUserProfile(session.user);
+      } else {
+        setUser(null);
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
+  const loadUserProfile = async (authUser: SupabaseUser) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (profile) {
+        setUser({
+          id: profile.id,
+          email: profile.email,
+          displayName: profile.display_name,
+          avatar: profile.avatar,
+          bio: profile.bio,
+          joinDate: profile.created_at,
+          onboardingCompleted: profile.onboarding_completed,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    const usersData = localStorage.getItem(USERS_KEY);
-    const users = usersData ? JSON.parse(usersData) : {};
+      if (error) throw error;
 
-    if (!users[email]) {
-      return { success: false, error: 'User not found. Please sign up first.' };
+      if (data.user) {
+        await loadUserProfile(data.user);
+        return { success: true };
+      }
+
+      return { success: false, error: 'Login failed' };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Login failed. Please try again.'
+      };
     }
-
-    if (users[email].password !== password) {
-      return { success: false, error: 'Incorrect password.' };
-    }
-
-    const userData = users[email];
-    const userObj: User = {
-      id: userData.id,
-      email: userData.email,
-      displayName: userData.displayName,
-      avatar: userData.avatar,
-      bio: userData.bio,
-      joinDate: userData.joinDate,
-      onboardingCompleted: userData.onboardingCompleted,
-    };
-
-    setUser(userObj);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userObj));
-
-    return { success: true };
   };
 
   const signup = async (email: string, password: string, displayName: string): Promise<{ success: boolean; error?: string }> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    const usersData = localStorage.getItem(USERS_KEY);
-    const users = usersData ? JSON.parse(usersData) : {};
+      if (error) throw error;
 
-    if (users[email]) {
-      return { success: false, error: 'User already exists. Please log in instead.' };
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            email: data.user.email,
+            display_name: displayName,
+            onboarding_completed: false,
+          });
+
+        if (profileError) throw profileError;
+
+        await loadUserProfile(data.user);
+        return { success: true };
+      }
+
+      return { success: false, error: 'Signup failed' };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Signup failed. Please try again.'
+      };
     }
-
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      email,
-      displayName,
-      joinDate: new Date().toISOString(),
-      onboardingCompleted: false,
-    };
-
-    users[email] = {
-      ...newUser,
-      password,
-    };
-
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    setUser(newUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-
-    return { success: true };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem(STORAGE_KEY);
   };
 
   const updateProfile = async (updates: Partial<User>) => {
     if (!user) return;
 
-    const updatedUser = { ...user, ...updates };
-    setUser(updatedUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          display_name: updates.displayName,
+          avatar: updates.avatar,
+          bio: updates.bio,
+          onboarding_completed: updates.onboardingCompleted,
+        })
+        .eq('id', user.id);
 
-    const usersData = localStorage.getItem(USERS_KEY);
-    if (usersData) {
-      const users = JSON.parse(usersData);
-      if (users[user.email]) {
-        users[user.email] = { ...users[user.email], ...updates };
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-      }
+      if (error) throw error;
+
+      setUser({ ...user, ...updates });
+    } catch (error) {
+      console.error('Error updating profile:', error);
     }
   };
 
@@ -116,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-dark-950">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );

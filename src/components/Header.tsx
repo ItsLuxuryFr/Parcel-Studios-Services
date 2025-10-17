@@ -14,24 +14,27 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+    <header className="glass-dark sticky top-0 z-50 border-b border-white/5">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center space-x-2 group">
-            <Package className="w-8 h-8 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-            <span className="text-xl font-bold text-white">Parcel Studio</span>
+        <div className="flex justify-between items-center h-20">
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div className="relative">
+              <Package className="w-9 h-9 text-primary-400 group-hover:text-primary-300 transition-all group-hover:scale-110" />
+              <div className="absolute inset-0 bg-primary-400/20 blur-xl group-hover:bg-primary-400/30 transition-all" />
+            </div>
+            <span className="text-xl font-bold text-white tracking-tight">Parcel Studio</span>
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
             <Link
               to="/portfolio"
-              className="text-slate-300 hover:text-white transition-colors"
+              className="text-gray-300 hover:text-white transition-all hover:scale-105 font-medium"
             >
               Portfolio
             </Link>
             <Link
               to="/commissions"
-              className="text-slate-300 hover:text-white transition-colors"
+              className="text-gray-300 hover:text-white transition-all hover:scale-105 font-medium"
             >
               Commissions
             </Link>
@@ -40,11 +43,13 @@ export default function Header() {
               <div className="relative">
                 <button
                   onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                  className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+                  className="flex items-center space-x-2 text-gray-300 hover:text-white transition-all hover:scale-105 font-medium"
                   aria-expanded={accountMenuOpen}
                   aria-haspopup="true"
                 >
-                  <User className="w-5 h-5" />
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
                   <span>{user?.displayName || 'Account'}</span>
                 </button>
 
@@ -54,38 +59,38 @@ export default function Header() {
                       className="fixed inset-0 z-10"
                       onClick={() => setAccountMenuOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-lg shadow-xl py-2 z-20 border border-slate-700">
+                    <div className="absolute right-0 mt-2 w-48 glass rounded-xl shadow-2xl py-2 z-20 animate-fade-in">
                       <Link
                         to="/profile"
-                        className="flex items-center space-x-2 px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white transition-all mx-2 rounded-lg"
                         onClick={() => setAccountMenuOpen(false)}
                       >
                         <User className="w-4 h-4" />
-                        <span>Profile</span>
+                        <span className="text-sm font-medium">Profile</span>
                       </Link>
                       <Link
                         to="/privacy"
-                        className="flex items-center space-x-2 px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white transition-all mx-2 rounded-lg"
                         onClick={() => setAccountMenuOpen(false)}
                       >
                         <Shield className="w-4 h-4" />
-                        <span>Privacy Settings</span>
+                        <span className="text-sm font-medium">Privacy Settings</span>
                       </Link>
                       <Link
                         to="/my-commissions"
-                        className="flex items-center space-x-2 px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white transition-all mx-2 rounded-lg"
                         onClick={() => setAccountMenuOpen(false)}
                       >
                         <Briefcase className="w-4 h-4" />
-                        <span>My Commissions</span>
+                        <span className="text-sm font-medium">My Commissions</span>
                       </Link>
-                      <div className="border-t border-slate-700 my-2" />
+                      <div className="border-t border-white/10 my-2" />
                       <button
                         onClick={handleLogout}
-                        className="flex items-center space-x-2 px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors w-full text-left"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white transition-all w-full text-left mx-2 rounded-lg"
                       >
                         <LogOut className="w-4 h-4" />
-                        <span>Log Out</span>
+                        <span className="text-sm font-medium">Log Out</span>
                       </button>
                     </div>
                   </>
@@ -95,41 +100,42 @@ export default function Header() {
               <div className="flex items-center space-x-4">
                 <Link
                   to="/login"
-                  className="text-slate-300 hover:text-white transition-colors"
+                  className="text-gray-300 hover:text-white transition-all hover:scale-105 font-medium"
                 >
                   Log In
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="relative group bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white px-6 py-2.5 rounded-xl transition-all hover:scale-105 font-semibold shadow-lg hover:shadow-primary-500/50"
                 >
-                  Sign Up
+                  <span className="relative z-10">Sign Up</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-accent-400 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
                 </Link>
               </div>
             )}
           </div>
 
           <button
-            className="md:hidden text-slate-300 hover:text-white"
+            className="md:hidden text-gray-300 hover:text-white transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
           </button>
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-4 border-t border-slate-800">
+          <div className="md:hidden py-4 space-y-2 border-t border-white/10 animate-slide-up">
             <Link
               to="/portfolio"
-              className="block text-slate-300 hover:text-white transition-colors"
+              className="block text-gray-300 hover:text-white transition-colors py-2 font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Portfolio
             </Link>
             <Link
               to="/commissions"
-              className="block text-slate-300 hover:text-white transition-colors"
+              className="block text-gray-300 hover:text-white transition-colors py-2 font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Commissions
@@ -137,55 +143,55 @@ export default function Header() {
 
             {isAuthenticated ? (
               <>
-                <div className="border-t border-slate-800 pt-4 space-y-4">
+                <div className="border-t border-white/10 pt-4 space-y-2">
                   <Link
                     to="/profile"
-                    className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+                    className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors py-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <User className="w-4 h-4" />
-                    <span>Profile</span>
+                    <span className="font-medium">Profile</span>
                   </Link>
                   <Link
                     to="/privacy"
-                    className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+                    className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors py-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Shield className="w-4 h-4" />
-                    <span>Privacy Settings</span>
+                    <span className="font-medium">Privacy Settings</span>
                   </Link>
                   <Link
                     to="/my-commissions"
-                    className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+                    className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors py-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Briefcase className="w-4 h-4" />
-                    <span>My Commissions</span>
+                    <span className="font-medium">My Commissions</span>
                   </Link>
                   <button
                     onClick={() => {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+                    className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors py-2"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Log Out</span>
+                    <span className="font-medium">Log Out</span>
                   </button>
                 </div>
               </>
             ) : (
-              <div className="border-t border-slate-800 pt-4 space-y-4">
+              <div className="border-t border-white/10 pt-4 space-y-3">
                 <Link
                   to="/login"
-                  className="block text-slate-300 hover:text-white transition-colors"
+                  className="block text-gray-300 hover:text-white transition-colors py-2 font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Log In
                 </Link>
                 <Link
                   to="/signup"
-                  className="block bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors text-center"
+                  className="block bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white px-4 py-3 rounded-xl transition-all text-center font-semibold shadow-lg"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Sign Up

@@ -12,18 +12,22 @@ export default function CommissionCard({ commission, showActions = false }: Comm
     draft: 'bg-gray-600',
     submitted: 'bg-blue-600',
     in_review: 'bg-yellow-600',
-    approved: 'bg-purple-600',
+    accepted: 'bg-emerald-600',
+    approved: 'bg-emerald-600',
     rejected: 'bg-red-600',
-    completed: 'bg-brown-600',
+    completed: 'bg-purple-600',
+    archived: 'bg-slate-600',
   };
 
   const statusLabels = {
     draft: 'Draft',
     submitted: 'Submitted',
     in_review: 'In Review',
+    accepted: 'Accepted',
     approved: 'Approved',
     rejected: 'Rejected',
     completed: 'Completed',
+    archived: 'Archived',
   };
 
   const complexityLabels = {

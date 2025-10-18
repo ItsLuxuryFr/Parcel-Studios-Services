@@ -1,6 +1,6 @@
 export type TaskComplexity = 'easy' | 'medium' | 'hard' | 'extreme';
 
-export type CommissionStatus = 'draft' | 'submitted' | 'in_review' | 'approved' | 'rejected' | 'completed';
+export type CommissionStatus = 'draft' | 'submitted' | 'in_review' | 'accepted' | 'approved' | 'rejected' | 'completed' | 'archived';
 
 export type PortfolioCategoryType = 'scripting' | 'vfx' | 'building' | 'uiux';
 
@@ -41,6 +41,7 @@ export interface Commission {
   updatedAt: string;
   referenceNumber: string;
   tags: string[];
+  rejectionReason?: string;
 }
 
 export interface PortfolioCategory {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Shield, RefreshCw, X, TrendingUp, Clock, CheckCircle, XCircle, Search, Filter } from 'lucide-react';
+import { Shield, RefreshCw, X, TrendingUp, Clock, CheckCircle, XCircle, Search, Filter, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useCommissions } from '../contexts/CommissionContext';
 import { Commission, CommissionStatus } from '../types';
@@ -13,6 +13,9 @@ export default function Admin() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<CommissionStatus | 'all'>('all');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showHidden, setShowHidden] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
   const autoUpdatedCommissions = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -41,6 +44,7 @@ export default function Admin() {
         createdAt: item.created_at,
         updatedAt: item.updated_at,
         tags: item.tags || [],
+        rejectionReason: item.rejection_reason,
       }));
 
       setCommissions(mapped);
@@ -60,20 +64,47 @@ export default function Admin() {
     }
   }, [selectedCommission?.id]);
 
-  const handleStatusChange = async (commissionId: string, newStatus: CommissionStatus) => {
+  const handleStatusChange = async (commissionId: string, newStatus: CommissionStatus, reason?: string) => {
     setIsUpdating(commissionId);
     try {
-      await updateCommission(commissionId, { status: newStatus });
+      const updates: Partial<Commission> = { status: newStatus };
+      if (reason) {
+        updates.rejectionReason = reason;
+      }
+      await updateCommission(commissionId, updates);
       await loadAllCommissions();
 
       if (selectedCommission && selectedCommission.id === commissionId) {
-        setSelectedCommission({ ...selectedCommission, status: newStatus });
+        setSelectedCommission({ ...selectedCommission, status: newStatus, rejectionReason: reason });
       }
     } catch (error) {
       console.error('Error updating commission status:', error);
     } finally {
       setIsUpdating(null);
     }
+  };
+
+  const handleAccept = async () => {
+    if (selectedCommission) {
+      await handleStatusChange(selectedCommission.id, 'accepted');
+    }
+  };
+
+  const handleReject = () => {
+    setShowRejectDialog(true);
+  };
+
+  const confirmReject = async () => {
+    if (selectedCommission && rejectionReason.trim()) {
+      await handleStatusChange(selectedCommission.id, 'rejected', rejectionReason);
+      setShowRejectDialog(false);
+      setRejectionReason('');
+    }
+  };
+
+  const cancelReject = () => {
+    setShowRejectDialog(false);
+    setRejectionReason('');
   };
 
   const handleCloseModal = () => {
@@ -90,7 +121,8 @@ export default function Admin() {
       c.referenceNumber.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTags = selectedTags.length === 0 ||
       selectedTags.some(tag => c.tags?.includes(tag));
-    return matchesStatus && matchesSearch && matchesTags;
+    const matchesHidden = showHidden || c.status !== 'archived';
+    return matchesStatus && matchesSearch && matchesTags && matchesHidden;
   });
 
   const toggleTag = (tag: string) => {
@@ -108,9 +140,10 @@ export default function Admin() {
   const hasActiveFilters = filterStatus !== 'all' || searchQuery !== '' || selectedTags.length > 0;
 
   const stats = {
-    total: commissions.length,
+    total: commissions.filter(c => c.status !== 'archived').length,
     submitted: commissions.filter(c => c.status === 'submitted').length,
     inReview: commissions.filter(c => c.status === 'in_review').length,
+    accepted: commissions.filter(c => c.status === 'accepted').length,
     approved: commissions.filter(c => c.status === 'approved').length,
     rejected: commissions.filter(c => c.status === 'rejected').length,
     completed: commissions.filter(c => c.status === 'completed').length,
@@ -120,9 +153,11 @@ export default function Admin() {
     { value: 'draft', label: 'Draft' },
     { value: 'submitted', label: 'Submitted' },
     { value: 'in_review', label: 'In Review' },
+    { value: 'accepted', label: 'Accepted' },
     { value: 'approved', label: 'Approved' },
     { value: 'rejected', label: 'Rejected' },
     { value: 'completed', label: 'Completed' },
+    { value: 'archived', label: 'Archived' },
   ];
 
   return (
@@ -168,9 +203,9 @@ export default function Admin() {
           <div className="bg-gradient-to-br from-emerald-900/40 to-emerald-800/40 rounded-xl p-5 border border-emerald-700/50">
             <div className="flex items-center justify-between mb-2">
               <CheckCircle className="w-5 h-5 text-emerald-400" />
-              <span className="text-2xl font-bold text-white">{stats.approved}</span>
+              <span className="text-2xl font-bold text-white">{stats.accepted}</span>
             </div>
-            <p className="text-emerald-300 text-sm font-medium">Approved</p>
+            <p className="text-emerald-300 text-sm font-medium">Accepted</p>
           </div>
 
           <div className="bg-gradient-to-br from-red-900/40 to-red-800/40 rounded-xl p-5 border border-red-700/50">
@@ -191,6 +226,19 @@ export default function Admin() {
         </div>
 
         <div className="bg-slate-800 rounded-xl p-6 mb-6 space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={() => setShowHidden(!showHidden)}
+              className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                showHidden
+                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              {showHidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              <span>{showHidden ? 'Hide Archived' : 'Show Archived'}</span>
+            </button>
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
@@ -222,9 +270,11 @@ export default function Admin() {
                 <option value="draft">Draft</option>
                 <option value="submitted">Submitted</option>
                 <option value="in_review">In Review</option>
+                <option value="accepted">Accepted</option>
                 <option value="approved">Approved</option>
                 <option value="rejected">Rejected</option>
                 <option value="completed">Completed</option>
+                <option value="archived">Archived</option>
               </select>
             </div>
 
@@ -287,8 +337,10 @@ export default function Admin() {
                           commission.status === 'draft' ? 'bg-gray-600' :
                           commission.status === 'submitted' ? 'bg-blue-600' :
                           commission.status === 'in_review' ? 'bg-yellow-600' :
+                          commission.status === 'accepted' ? 'bg-emerald-600' :
                           commission.status === 'approved' ? 'bg-emerald-600' :
                           commission.status === 'rejected' ? 'bg-red-600' :
+                          commission.status === 'archived' ? 'bg-slate-600' :
                           'bg-purple-600'
                         } text-white text-xs px-3 py-1 rounded-full font-semibold capitalize`}>
                           {commission.status.replace('_', ' ')}
@@ -368,7 +420,7 @@ export default function Admin() {
         )}
       </div>
 
-      {selectedCommission && (
+      {selectedCommission && !showRejectDialog && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4" onClick={handleCloseModal}>
           <div className="bg-slate-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center">
@@ -387,8 +439,10 @@ export default function Admin() {
                   selectedCommission.status === 'draft' ? 'bg-gray-600' :
                   selectedCommission.status === 'submitted' ? 'bg-blue-600' :
                   selectedCommission.status === 'in_review' ? 'bg-yellow-600' :
+                  selectedCommission.status === 'accepted' ? 'bg-emerald-600' :
                   selectedCommission.status === 'approved' ? 'bg-emerald-600' :
                   selectedCommission.status === 'rejected' ? 'bg-red-600' :
+                  selectedCommission.status === 'archived' ? 'bg-slate-600' :
                   'bg-purple-600'
                 } text-white text-sm px-3 py-1.5 rounded-full font-semibold capitalize`}>
                   {selectedCommission.status.replace('_', ' ')}
@@ -439,21 +493,48 @@ export default function Admin() {
                 <p className="text-emerald-400 text-3xl font-bold">${selectedCommission.proposedAmount.toFixed(2)}</p>
               </div>
 
+              {selectedCommission.rejectionReason && (
+                <div>
+                  <p className="text-slate-400 text-sm mb-1">Rejection Reason</p>
+                  <p className="text-red-300 bg-red-900/20 border border-red-500/30 p-3 rounded-lg">{selectedCommission.rejectionReason}</p>
+                </div>
+              )}
+
               <div>
-                <p className="text-slate-400 text-sm mb-3">Update Status</p>
-                <div className="flex items-center space-x-2">
-                  <select
-                    value={selectedCommission.status}
-                    onChange={(e) => handleStatusChange(selectedCommission.id, e.target.value as CommissionStatus)}
-                    disabled={isUpdating === selectedCommission.id}
-                    className="bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 flex-1"
-                  >
-                    {statusOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                <p className="text-slate-400 text-sm mb-3">Actions</p>
+                <div className="flex items-center space-x-3">
+                  {selectedCommission.status === 'in_review' && (
+                    <>
+                      <button
+                        onClick={handleAccept}
+                        disabled={isUpdating === selectedCommission.id}
+                        className="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white px-6 py-2.5 rounded-lg font-semibold transition-colors"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={handleReject}
+                        disabled={isUpdating === selectedCommission.id}
+                        className="flex-1 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-6 py-2.5 rounded-lg font-semibold transition-colors"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
+                  {selectedCommission.status !== 'in_review' && (
+                    <select
+                      value={selectedCommission.status}
+                      onChange={(e) => handleStatusChange(selectedCommission.id, e.target.value as CommissionStatus)}
+                      disabled={isUpdating === selectedCommission.id}
+                      className="bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 flex-1"
+                    >
+                      {statusOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   {isUpdating === selectedCommission.id && (
                     <RefreshCw className="w-5 h-5 text-emerald-400 animate-spin" />
                   )}
@@ -470,6 +551,36 @@ export default function Admin() {
                   <span className="text-white">{new Date(selectedCommission.updatedAt).toLocaleString()}</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRejectDialog && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4" onClick={cancelReject}>
+          <div className="bg-slate-800 rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-white mb-4">Reject Commission</h3>
+            <p className="text-slate-400 text-sm mb-4">Please provide a reason for rejecting this commission:</p>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Enter rejection reason..."
+              className="w-full bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 placeholder-slate-400 min-h-[120px]"
+            />
+            <div className="flex items-center space-x-3 mt-6">
+              <button
+                onClick={cancelReject}
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReject}
+                disabled={!rejectionReason.trim()}
+                className="flex-1 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg font-semibold transition-colors"
+              >
+                Reject
+              </button>
             </div>
           </div>
         </div>

@@ -61,6 +61,7 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
       createdAt: insertedData.created_at,
       updatedAt: insertedData.updated_at,
       tags: insertedData.tags || [],
+      rejectionReason: insertedData.rejection_reason,
     };
 
     setCommissions(prev => [...prev, newCommission]);
@@ -75,6 +76,7 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
     if (updates.description) updateData.description = updates.description;
     if (updates.proposedAmount !== undefined) updateData.proposed_amount = updates.proposedAmount;
     if (updates.tags !== undefined) updateData.tags = updates.tags;
+    if (updates.rejectionReason !== undefined) updateData.rejection_reason = updates.rejectionReason;
 
     const { error } = await supabase
       .from('commissions')
@@ -131,6 +133,7 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
         createdAt: item.created_at,
         updatedAt: item.updated_at,
         tags: item.tags || [],
+        rejectionReason: item.rejection_reason,
       }));
 
       setCommissions(mapped);

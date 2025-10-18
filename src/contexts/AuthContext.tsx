@@ -108,40 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: 'Signup failed - no user returned' };
       }
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const { data: profile, error: profileCheckError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .maybeSingle();
-
-      if (profileCheckError) {
-        console.error('Error checking profile:', profileCheckError);
-        return {
-          success: false,
-          error: 'Failed to create user profile. Please try again.'
-        };
-      }
-
-      if (!profile) {
-        return {
-          success: false,
-          error: 'Profile was not created automatically. Please contact support.'
-        };
-      }
-
-      if (displayName && profile.display_name !== displayName) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ display_name: displayName })
-          .eq('id', data.user.id);
-
-        if (updateError) {
-          console.error('Error updating display name:', updateError);
-        }
-      }
-
       await loadUserProfile(data.user);
       return { success: true };
     } catch (error: any) {

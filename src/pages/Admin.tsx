@@ -1,12 +1,50 @@
 import { useState, useEffect } from 'react';
 import { Shield, RefreshCw, X } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { useCommissions } from '../contexts/CommissionContext';
 import { Commission, CommissionStatus } from '../types';
 
 export default function Admin() {
-  const { commissions, updateCommission } = useCommissions();
+  const { updateCommission } = useCommissions();
+  const [commissions, setCommissions] = useState<Commission[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [selectedCommission, setSelectedCommission] = useState<Commission | null>(null);
+
+  useEffect(() => {
+    loadAllCommissions();
+  }, []);
+
+  const loadAllCommissions = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('commissions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mapped: Commission[] = (data || []).map(item => ({
+        id: item.id,
+        userId: item.user_id,
+        taskComplexity: item.task_complexity,
+        subject: item.subject,
+        description: item.description,
+        proposedAmount: Number(item.proposed_amount),
+        status: item.status,
+        referenceNumber: item.reference_number,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+      }));
+
+      setCommissions(mapped);
+    } catch (error) {
+      console.error('Error loading commissions:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (selectedCommission && selectedCommission.status !== 'in_review') {
@@ -16,11 +54,17 @@ export default function Admin() {
 
   const handleStatusChange = async (commissionId: string, newStatus: CommissionStatus) => {
     setIsUpdating(commissionId);
-    await updateCommission(commissionId, { status: newStatus });
-    setIsUpdating(null);
+    try {
+      await updateCommission(commissionId, { status: newStatus });
+      await loadAllCommissions();
 
-    if (selectedCommission && selectedCommission.id === commissionId) {
-      setSelectedCommission({ ...selectedCommission, status: newStatus });
+      if (selectedCommission && selectedCommission.id === commissionId) {
+        setSelectedCommission({ ...selectedCommission, status: newStatus });
+      }
+    } catch (error) {
+      console.error('Error updating commission status:', error);
+    } finally {
+      setIsUpdating(null);
     }
   };
 

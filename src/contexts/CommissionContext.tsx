@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 interface CommissionContextType {
   commissions: Commission[];
   isLoading: boolean;
-  createCommission: (data: Omit<Commission, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status'>) => Promise<Commission>;
+  createCommission: (data: Omit<Commission, 'id' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status'>) => Promise<Commission>;
   updateCommission: (id: string, updates: Partial<Commission>) => Promise<void>;
   deleteCommission: (id: string) => Promise<void>;
   getUserCommissions: (userId: string) => Commission[];
@@ -20,8 +20,18 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      loadUserCommissions();
+    } else {
+      setCommissions([]);
+    }
+  }, [user]);
+
   const createCommission = async (
-    data: Omit<Commission, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status'>
+    data: Omit<Commission, 'id' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status'>
   ): Promise<Commission> => {
     const { data: insertedData, error } = await supabase
       .from('commissions')

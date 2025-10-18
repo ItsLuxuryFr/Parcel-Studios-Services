@@ -38,21 +38,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', authUser.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading user profile:', error);
+        throw error;
+      }
 
       if (profile) {
         setUser({
           id: profile.id,
           email: profile.email,
-          displayName: profile.display_name,
-          avatar: profile.avatar,
-          bio: profile.bio,
+          displayName: profile.display_name || '',
+          avatar: profile.avatar || undefined,
+          bio: profile.bio || undefined,
           joinDate: profile.created_at,
-          onboardingCompleted: profile.onboarding_completed,
+          onboardingCompleted: profile.onboarding_completed || false,
         });
+      } else {
+        setUser(null);
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -95,26 +101,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
-      if (data.user) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            display_name: displayName,
-          })
-          .eq('id', data.user.id);
-
-        if (profileError) {
-          console.error('Error updating profile:', profileError);
-        }
-
-        await loadUserProfile(data.user);
-        return { success: true };
+      if (!data.user) {
+        return { success: false, error: 'Signup failed - no user returned' };
       }
 
-      return { success: false, error: 'Signup failed' };
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const { data: profile, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (profileCheckError) {
+        console.error('Error checking profile:', profileCheckError);
+        return {
+          success: false,
+          error: 'Failed to create user profile. Please try again.'
+        };
+      }
+
+      if (!profile) {
+        return {
+          success: false,
+          error: 'Profile was not created automatically. Please contact support.'
+        };
+      }
+
+      if (displayName && profile.display_name !== displayName) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ display_name: displayName })
+          .eq('id', data.user.id);
+
+        if (updateError) {
+          console.error('Error updating display name:', updateError);
+        }
+      }
+
+      await loadUserProfile(data.user);
+      return { success: true };
     } catch (error: any) {
+      console.error('Signup error:', error);
       return {
         success: false,
         error: error.message || 'Signup failed. Please try again.'
@@ -131,21 +159,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     try {
+      const updateData: any = {};
+
+      if (updates.displayName !== undefined) updateData.display_name = updates.displayName;
+      if (updates.avatar !== undefined) updateData.avatar = updates.avatar;
+      if (updates.bio !== undefined) updateData.bio = updates.bio;
+      if (updates.onboardingCompleted !== undefined) updateData.onboarding_completed = updates.onboardingCompleted;
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          display_name: updates.displayName,
-          avatar: updates.avatar,
-          bio: updates.bio,
-          onboarding_completed: updates.onboardingCompleted,
-        })
+        .update(updateData)
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+      }
 
       setUser({ ...user, ...updates });
     } catch (error) {
       console.error('Error updating profile:', error);
+      throw error;
     }
   };
 

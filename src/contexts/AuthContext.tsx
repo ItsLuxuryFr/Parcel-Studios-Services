@@ -10,21 +10,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        loadUserProfile(session.user);
+        await loadUserProfile(session.user);
       } else {
         setIsLoading(false);
       }
-    });
+    })();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        loadUserProfile(session.user);
-      } else {
-        setUser(null);
-        setIsLoading(false);
-      }
+      (async () => {
+        if (session?.user) {
+          await loadUserProfile(session.user);
+        } else {
+          setUser(null);
+          setIsLoading(false);
+        }
+      })();
     });
 
     return () => subscription.unsubscribe();

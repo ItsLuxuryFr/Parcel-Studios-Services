@@ -1,16 +1,27 @@
-import { useState } from 'react';
-import { Shield, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Shield, RefreshCw, X } from 'lucide-react';
 import { useCommissions } from '../contexts/CommissionContext';
-import { CommissionStatus } from '../types';
+import { Commission, CommissionStatus } from '../types';
 
 export default function Admin() {
   const { commissions, updateCommission } = useCommissions();
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [selectedCommission, setSelectedCommission] = useState<Commission | null>(null);
+
+  useEffect(() => {
+    if (selectedCommission && selectedCommission.status !== 'in_review') {
+      handleStatusChange(selectedCommission.id, 'in_review');
+    }
+  }, [selectedCommission]);
 
   const handleStatusChange = async (commissionId: string, newStatus: CommissionStatus) => {
     setIsUpdating(commissionId);
     await updateCommission(commissionId, { status: newStatus });
     setIsUpdating(null);
+
+    if (selectedCommission && selectedCommission.id === commissionId) {
+      setSelectedCommission({ ...selectedCommission, status: newStatus });
+    }
   };
 
   const statusOptions: { value: CommissionStatus; label: string }[] = [
@@ -59,7 +70,11 @@ export default function Admin() {
               </thead>
               <tbody className="divide-y divide-slate-700">
                 {commissions.map((commission) => (
-                  <tr key={commission.id} className="hover:bg-slate-700/50 transition-colors">
+                  <tr
+                    key={commission.id}
+                    className="hover:bg-slate-700/50 transition-colors cursor-pointer"
+                    onClick={() => setSelectedCommission(commission)}
+                  >
                     <td className="px-6 py-4">
                       <span className="text-slate-300 font-mono text-sm">
                         {commission.referenceNumber}
@@ -86,7 +101,7 @@ export default function Admin() {
                         {commission.status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center space-x-2">
                         <select
                           value={commission.status}
@@ -118,6 +133,97 @@ export default function Admin() {
           )}
         </div>
       </div>
+
+      {selectedCommission && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4" onClick={() => setSelectedCommission(null)}>
+          <div className="bg-slate-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-white">Commission Details</h2>
+              <button
+                onClick={() => setSelectedCommission(null)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="flex items-center space-x-3">
+                <span className={`${
+                  selectedCommission.status === 'draft' ? 'bg-gray-600' :
+                  selectedCommission.status === 'submitted' ? 'bg-blue-600' :
+                  selectedCommission.status === 'in_review' ? 'bg-yellow-600' :
+                  selectedCommission.status === 'approved' ? 'bg-emerald-600' :
+                  selectedCommission.status === 'rejected' ? 'bg-red-600' :
+                  'bg-slate-600'
+                } text-white text-sm px-3 py-1.5 rounded-full font-semibold capitalize`}>
+                  {selectedCommission.status.replace('_', ' ')}
+                </span>
+                <span className={`${
+                  selectedCommission.taskComplexity === 'easy' ? 'bg-green-900/30 text-green-400 border-green-500/30' :
+                  selectedCommission.taskComplexity === 'medium' ? 'bg-blue-900/30 text-blue-400 border-blue-500/30' :
+                  selectedCommission.taskComplexity === 'hard' ? 'bg-orange-900/30 text-orange-400 border-orange-500/30' :
+                  'bg-red-900/30 text-red-400 border-red-500/30'
+                } text-sm px-3 py-1.5 rounded-full capitalize border`}>
+                  {selectedCommission.taskComplexity}
+                </span>
+              </div>
+
+              <div>
+                <p className="text-slate-400 text-sm mb-1">Reference Number</p>
+                <p className="text-white font-mono text-lg">{selectedCommission.referenceNumber}</p>
+              </div>
+
+              <div>
+                <p className="text-slate-400 text-sm mb-1">Subject</p>
+                <p className="text-white text-xl font-semibold">{selectedCommission.subject}</p>
+              </div>
+
+              <div>
+                <p className="text-slate-400 text-sm mb-1">Description</p>
+                <p className="text-white leading-relaxed whitespace-pre-wrap">{selectedCommission.description}</p>
+              </div>
+
+              <div>
+                <p className="text-slate-400 text-sm mb-1">Proposed Amount</p>
+                <p className="text-emerald-400 text-3xl font-bold">${selectedCommission.proposedAmount.toFixed(2)}</p>
+              </div>
+
+              <div>
+                <p className="text-slate-400 text-sm mb-3">Update Status</p>
+                <div className="flex items-center space-x-2">
+                  <select
+                    value={selectedCommission.status}
+                    onChange={(e) => handleStatusChange(selectedCommission.id, e.target.value as CommissionStatus)}
+                    disabled={isUpdating === selectedCommission.id}
+                    className="bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 flex-1"
+                  >
+                    {statusOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {isUpdating === selectedCommission.id && (
+                    <RefreshCw className="w-5 h-5 text-purple-400 animate-spin" />
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-sm text-slate-400 pt-4 border-t border-slate-700">
+                <div>
+                  <span className="block">Created</span>
+                  <span className="text-white">{new Date(selectedCommission.createdAt).toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="block">Updated</span>
+                  <span className="text-white">{new Date(selectedCommission.updatedAt).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

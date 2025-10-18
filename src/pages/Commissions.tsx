@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Filter, X } from 'lucide-react';
+import { Plus, Filter, X, Search } from 'lucide-react';
 import { useCommissions } from '../contexts/CommissionContext';
 import { useAuth } from '../contexts/AuthContext';
 import CommissionCard from '../components/CommissionCard';
@@ -11,7 +11,11 @@ export default function Commissions() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<CommissionStatus | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedCommission, setSelectedCommission] = useState<Commission | null>(null);
+
+  const allTags = Array.from(new Set(commissions.flatMap(c => c.tags || [])));
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -21,9 +25,30 @@ export default function Commissions() {
     loadUserCommissions();
   }, [isAuthenticated, navigate]);
 
-  const filteredCommissions = filterStatus === 'all'
-    ? commissions
-    : commissions.filter(c => c.status === filterStatus);
+  const filteredCommissions = commissions.filter(c => {
+    const matchesStatus = filterStatus === 'all' || c.status === filterStatus;
+    const matchesSearch = !searchQuery ||
+      c.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.referenceNumber.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTags = selectedTags.length === 0 ||
+      selectedTags.some(tag => c.tags?.includes(tag));
+    return matchesStatus && matchesSearch && matchesTags;
+  });
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const clearFilters = () => {
+    setFilterStatus('all');
+    setSearchQuery('');
+    setSelectedTags([]);
+  };
+
+  const hasActiveFilters = filterStatus !== 'all' || searchQuery !== '' || selectedTags.length > 0;
 
   if (!isAuthenticated) {
     return null;
@@ -41,31 +66,85 @@ export default function Commissions() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div className="flex items-center space-x-4">
-            <Filter className="w-5 h-5 text-slate-400" />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as CommissionStatus | 'all')}
-              className="bg-slate-800 border border-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        <div className="space-y-6 mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex-1 w-full sm:w-auto">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search commissions by subject, description, or reference..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white pl-10 pr-10 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-slate-400"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <Link
+              to="/commissions/new"
+              className="inline-flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors whitespace-nowrap"
             >
-              <option value="all">All Statuses</option>
-              <option value="draft">Draft</option>
-              <option value="submitted">Submitted</option>
-              <option value="in_review">In Review</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-              <option value="completed">Completed</option>
-            </select>
+              <Plus className="w-5 h-5" />
+              <span>New Commission</span>
+            </Link>
           </div>
 
-          <Link
-            to="/commissions/new"
-            className="inline-flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            <span>New Commission</span>
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center space-x-2">
+              <Filter className="w-5 h-5 text-slate-400" />
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as CommissionStatus | 'all')}
+                className="bg-slate-800 border border-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+              >
+                <option value="all">All Statuses</option>
+                <option value="draft">Draft</option>
+                <option value="submitted">Submitted</option>
+                <option value="in_review">In Review</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+
+            {allTags.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-slate-400 text-sm">Tags:</span>
+                {allTags.map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => toggleTag(tag)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      selectedTags.includes(tag)
+                        ? 'bg-emerald-500 text-white border-2 border-emerald-400'
+                        : 'bg-slate-800 text-slate-300 border-2 border-slate-700 hover:border-slate-600'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center space-x-1 text-slate-400 hover:text-white text-sm font-medium transition-colors"
+              >
+                <X className="w-4 h-4" />
+                <span>Clear Filters</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {isLoading ? (
@@ -74,9 +153,10 @@ export default function Commissions() {
           </div>
         ) : (
           <>
-            <div className="mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <p className="text-slate-400">
                 {filteredCommissions.length} commission{filteredCommissions.length !== 1 ? 's' : ''} found
+                {hasActiveFilters && <span className="ml-2 text-emerald-400">(filtered)</span>}
               </p>
             </div>
 
@@ -153,6 +233,22 @@ export default function Commissions() {
                 <p className="text-slate-400 text-sm mb-1">Description</p>
                 <p className="text-white leading-relaxed whitespace-pre-wrap">{selectedCommission.description}</p>
               </div>
+
+              {selectedCommission.tags && selectedCommission.tags.length > 0 && (
+                <div>
+                  <p className="text-slate-400 text-sm mb-2">Tags</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCommission.tags.map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-sm font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <p className="text-slate-400 text-sm mb-1">Proposed Amount</p>

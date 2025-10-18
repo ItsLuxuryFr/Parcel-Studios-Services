@@ -67,6 +67,24 @@ export default function CommissionCard({ commission, showActions = false }: Comm
         {commission.description}
       </p>
 
+      {commission.tags && commission.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {commission.tags.slice(0, 3).map((tag, idx) => (
+            <span
+              key={idx}
+              className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded text-xs font-medium"
+            >
+              {tag}
+            </span>
+          ))}
+          {commission.tags.length > 3 && (
+            <span className="text-emerald-400 text-xs font-medium">
+              +{commission.tags.length - 3} more
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between text-xs text-gray-500 border-t border-purple-500/10 pt-3">
         <div className="flex items-center space-x-1">
           <Calendar className="w-3.5 h-3.5" />

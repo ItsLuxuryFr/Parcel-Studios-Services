@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 interface CommissionContextType {
   commissions: Commission[];
   isLoading: boolean;
-  createCommission: (data: Omit<Commission, 'id' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status'>) => Promise<Commission>;
+  createCommission: (data: Omit<Commission, 'id' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status' | 'tags'> & { tags?: string[] }) => Promise<Commission>;
   updateCommission: (id: string, updates: Partial<Commission>) => Promise<void>;
   deleteCommission: (id: string) => Promise<void>;
   getUserCommissions: (userId: string) => Commission[];
@@ -31,7 +31,7 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const createCommission = async (
-    data: Omit<Commission, 'id' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status'>
+    data: Omit<Commission, 'id' | 'createdAt' | 'updatedAt' | 'referenceNumber' | 'status' | 'tags'> & { tags?: string[] }
   ): Promise<Commission> => {
     const { data: insertedData, error } = await supabase
       .from('commissions')
@@ -42,6 +42,7 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
         description: data.description,
         proposed_amount: data.proposedAmount,
         status: 'draft',
+        tags: data.tags || [],
       })
       .select()
       .single();
@@ -59,6 +60,7 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
       referenceNumber: insertedData.reference_number,
       createdAt: insertedData.created_at,
       updatedAt: insertedData.updated_at,
+      tags: insertedData.tags || [],
     };
 
     setCommissions(prev => [...prev, newCommission]);
@@ -72,6 +74,7 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
     if (updates.subject) updateData.subject = updates.subject;
     if (updates.description) updateData.description = updates.description;
     if (updates.proposedAmount !== undefined) updateData.proposed_amount = updates.proposedAmount;
+    if (updates.tags !== undefined) updateData.tags = updates.tags;
 
     const { error } = await supabase
       .from('commissions')
@@ -127,6 +130,7 @@ export function CommissionProvider({ children }: { children: ReactNode }) {
         referenceNumber: item.reference_number,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
+        tags: item.tags || [],
       }));
 
       setCommissions(mapped);

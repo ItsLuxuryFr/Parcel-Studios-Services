@@ -40,6 +40,7 @@ export interface Commission {
   createdAt: string;
   updatedAt: string;
   referenceNumber: string;
+  tags: string[];
 }
 
 export interface PortfolioCategory {

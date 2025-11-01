@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Menu, X, Package, User, LogOut, FileText, Shield, Briefcase } from 'lucide-react';
+import { Menu, X, Package, User, LogOut, FileText, Shield, Briefcase, Settings, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -38,20 +38,36 @@ export default function Header() {
             >
               Commissions
             </Link>
+            <Link
+              to="/messages"
+              className="text-gray-400 hover:text-purple-300 transition-all font-medium text-sm"
+            >
+              Messages
+            </Link>
 
             {isAuthenticated ? (
-              <div className="relative">
-                <button
-                  onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                  className="flex items-center space-x-2 text-gray-400 hover:text-purple-300 transition-all font-medium text-sm"
-                  aria-expanded={accountMenuOpen}
-                  aria-haspopup="true"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <span>{user?.displayName || 'Account'}</span>
-                </button>
+              <div className="flex items-center space-x-4">
+                <div className="h-6 w-px bg-purple-500/20"></div>
+                <div className="relative">
+                  <button
+                    onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+                    className="flex items-center space-x-2 text-gray-400 hover:text-purple-300 transition-all font-medium text-sm"
+                    aria-expanded={accountMenuOpen}
+                    aria-haspopup="true"
+                  >
+                    <span>{user?.displayName || 'Account'}</span>
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-500/30 overflow-hidden">
+                      {user?.avatar ? (
+                        <img 
+                          src={user.avatar} 
+                          alt={user.displayName || 'User'} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-4 h-4 text-white" />
+                      )}
+                    </div>
+                  </button>
 
                 {accountMenuOpen && (
                   <>
@@ -77,13 +93,31 @@ export default function Header() {
                         <span className="text-sm font-medium">Privacy Settings</span>
                       </Link>
                       <Link
-                        to="/my-commissions"
+                        to="/commissions"
                         className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-purple-500/20 hover:text-purple-200 transition-all mx-2 rounded-lg"
                         onClick={() => setAccountMenuOpen(false)}
                       >
                         <Briefcase className="w-4 h-4" />
                         <span className="text-sm font-medium">My Commissions</span>
                       </Link>
+                      <Link
+                        to="/messages"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-purple-500/20 hover:text-purple-200 transition-all mx-2 rounded-lg"
+                        onClick={() => setAccountMenuOpen(false)}
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span className="text-sm font-medium">Messages</span>
+                      </Link>
+                      {user?.isAdmin && (
+                        <Link
+                          to="/admin"
+                          className="flex items-center space-x-2 px-4 py-2.5 text-gray-300 hover:bg-purple-500/20 hover:text-purple-200 transition-all mx-2 rounded-lg"
+                          onClick={() => setAccountMenuOpen(false)}
+                        >
+                          <Settings className="w-4 h-4" />
+                          <span className="text-sm font-medium">Admin Panel</span>
+                        </Link>
+                      )}
                       <div className="border-t border-purple-500/20 my-2" />
                       <button
                         onClick={handleLogout}
@@ -95,6 +129,7 @@ export default function Header() {
                     </div>
                   </>
                 )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
@@ -139,6 +174,13 @@ export default function Header() {
             >
               Commissions
             </Link>
+            <Link
+              to="/messages"
+              className="block text-gray-300 hover:text-white transition-colors py-2 font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Messages
+            </Link>
 
             {isAuthenticated ? (
               <>
@@ -160,13 +202,31 @@ export default function Header() {
                     <span className="font-medium">Privacy Settings</span>
                   </Link>
                   <Link
-                    to="/my-commissions"
+                    to="/commissions"
                     className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors py-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Briefcase className="w-4 h-4" />
                     <span className="font-medium">My Commissions</span>
                   </Link>
+                  <Link
+                    to="/messages"
+                    className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="font-medium">Messages</span>
+                  </Link>
+                  {user?.isAdmin && (
+                    <Link
+                      to="/admin"
+                      className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span className="font-medium">Admin Panel</span>
+                    </Link>
+                  )}
                   <button
                     onClick={() => {
                       handleLogout();

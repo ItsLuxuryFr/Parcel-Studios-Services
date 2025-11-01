@@ -1,12 +1,80 @@
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star } from 'lucide-react';
-import { mockProjects, portfolioCategories } from '../data/mockData';
+import { ArrowLeft, Star, Code } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Project, PortfolioCategoryType } from '../types';
 import ProjectCard from '../components/ProjectCard';
 
 export default function PortfolioCategory() {
   const { categoryId } = useParams<{ categoryId: string }>();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const portfolioCategories = [
+    {
+      id: 'scripting' as PortfolioCategoryType,
+      name: 'Scripting',
+      description: 'Advanced Lua scripting for game mechanics, systems, and tools',
+      featured: true,
+      experienceYears: 4,
+    },
+    {
+      id: 'vfx' as PortfolioCategoryType,
+      name: 'VFX',
+      description: 'Stunning visual effects and particle systems',
+    },
+    {
+      id: 'building' as PortfolioCategoryType,
+      name: 'Building',
+      description: 'Detailed environments and architectural design',
+    },
+    {
+      id: 'uiux' as PortfolioCategoryType,
+      name: 'UI/UX',
+      description: 'Modern, intuitive user interfaces and experiences',
+    },
+  ];
+
   const category = portfolioCategories.find(c => c.id === categoryId);
-  const projects = mockProjects.filter(p => p.category === categoryId);
+
+  useEffect(() => {
+    if (categoryId) {
+      loadCategoryProjects();
+    }
+  }, [categoryId]);
+
+  const loadCategoryProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('portfolio_projects')
+        .select('*')
+        .eq('category', categoryId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mapped: Project[] = (data || []).map(item => ({
+        id: item.id,
+        category: item.category,
+        title: item.title,
+        shortCaption: item.short_caption,
+        description: item.description,
+        thumbnailUrl: item.thumbnail_url,
+        videoUrl: item.video_url,
+        images: item.images || [],
+        tags: item.tags || [],
+        skills: item.skills || [],
+        completionDate: item.completion_date,
+        featured: item.featured || false,
+      }));
+
+      setProjects(mapped);
+    } catch (error) {
+      console.error('Error loading category projects:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!category) {
     return (
@@ -16,6 +84,19 @@ export default function PortfolioCategory() {
           <Link to="/portfolio" className="text-purple-400 hover:text-purple-300">
             Back to Portfolio
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="inline-block">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+          </div>
+          <div className="text-purple-300 text-xl">Loading projects...</div>
         </div>
       </div>
     );
@@ -80,14 +161,25 @@ export default function PortfolioCategory() {
         </div>
 
         <div className="space-y-5">
-          {projects.map(project => (
-            <ProjectCard key={project.id} project={project} />
+          {projects.map((project, index) => (
+            <div 
+              key={project.id} 
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <ProjectCard project={project} />
+            </div>
           ))}
         </div>
 
         {projects.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-400 text-lg">No projects in this category yet.</p>
+            <div className="inline-block mb-4">
+              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                <Code className="w-8 h-8 text-purple-400" />
+              </div>
+            </div>
+            <p className="text-purple-300 text-lg">No projects in this category yet.</p>
           </div>
         )}
       </div>

@@ -1,28 +1,94 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User as UserIcon, Image, FileText, CheckCircle } from 'lucide-react';
+import { User as UserIcon, FileText, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+import ImageUpload from '../components/ImageUpload';
 
 export default function Onboarding() {
+  const { user, completeOnboarding } = useAuth();
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
   const [avatar, setAvatar] = useState('');
   const [bio, setBio] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { user, completeOnboarding } = useAuth();
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null);
+
+  // Check if user is authenticated, redirect to login if not
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) {
+        console.log('No authenticated user, redirecting to login');
+        navigate('/login');
+      }
+    };
+    checkAuth();
+  }, [navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError('');
+    
+    const finalUsername = user?.username || '';
+    const finalDisplayName = displayName.trim();
+    
+    if (!finalUsername) {
+      setError('Username not found. Please sign up again.');
+      return;
+    }
+    
+    if (!finalDisplayName) {
+      setError('Please enter a display name.');
+      return;
+    }
+    
     setIsLoading(true);
 
-    await completeOnboarding(
-      displayName || user?.displayName || '',
-      avatar,
-      bio
-    );
+    try {
+      // Check if display name is already taken
+      const { data: existingDisplayNames, error: displayNameError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('display_name', finalDisplayName);
 
-    setIsLoading(false);
-    navigate('/');
+      if (displayNameError) {
+        console.error('Error checking display name:', displayNameError);
+      } else if (existingDisplayNames && existingDisplayNames.length > 0) {
+        setError('The display name is taken.');
+        setIsLoading(false);
+        return;
+      }
+
+      await completeOnboarding(
+        finalUsername,
+        finalDisplayName,
+        avatar,
+        bio
+      );
+      navigate('/');
+    } catch (error: any) {
+      console.error('Onboarding error:', error);
+      console.log('Error message:', error.message);
+      console.log('Error details:', error);
+      
+      if (error.message && (
+        error.message.includes('duplicate key value violates unique constraint') ||
+        error.message.includes('unique_display_name') ||
+        error.message.includes('display_name') && error.message.includes('unique') ||
+        error.message.includes('duplicate') ||
+        error.message.includes('already exists') ||
+        error.message.includes('unique constraint') ||
+        error.message.includes('violates unique constraint')
+      )) {
+        setError('The display name is taken.');
+      } else {
+        setError(error.message || 'Failed to complete onboarding. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -37,6 +103,12 @@ export default function Onboarding() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-slate-800 rounded-xl p-8 space-y-6">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-start space-x-3">
+              <div className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5">⚠</div>
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
           <div>
             <label htmlFor="displayName" className="block text-sm font-medium text-slate-300 mb-2">
               Display Name
@@ -49,28 +121,38 @@ export default function Onboarding() {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-11 pr-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder={user?.displayName || 'Your Name'}
+                placeholder="Your Display Name"
+                required
               />
             </div>
             <p className="text-slate-400 text-sm mt-1">How you'll appear to others</p>
           </div>
 
           <div>
-            <label htmlFor="avatar" className="block text-sm font-medium text-slate-300 mb-2">
-              Avatar URL (Optional)
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Profile Image (Optional)
             </label>
-            <div className="relative">
-              <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                id="avatar"
-                type="text"
-                value={avatar}
-                onChange={(e) => setAvatar(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-11 pr-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="https://example.com/avatar.jpg"
+            {user?.id && (
+              <ImageUpload
+                currentAvatarUrl={undefined}
+                userId={user.id}
+                onUploadComplete={(url) => {
+                  setAvatar(url);
+                  setAvatarUploadError(null);
+                }}
+                onError={(error) => {
+                  setAvatarUploadError(error);
+                }}
+                disabled={isLoading}
               />
-            </div>
-            <p className="text-slate-400 text-sm mt-1">Link to your profile picture</p>
+            )}
+            {avatarUploadError && (
+              <p className="text-sm text-red-400 mt-2">{avatarUploadError}</p>
+            )}
+            {!user?.id && (
+              <p className="text-slate-400 text-sm">Please wait while we load your account...</p>
+            )}
+            <p className="text-slate-400 text-sm mt-1">Upload a profile picture (optional but recommended)</p>
           </div>
 
           <div>

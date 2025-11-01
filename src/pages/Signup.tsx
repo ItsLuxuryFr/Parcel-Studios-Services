@@ -1,13 +1,13 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, Mail, Lock, User as UserIcon, AlertCircle } from 'lucide-react';
+import { Package, Mail, Lock, AlertCircle, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Signup() {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signup } = useAuth();
@@ -17,8 +17,13 @@ export default function Signup() {
     e.preventDefault();
     setError('');
 
-    if (!email || !password || !confirmPassword || !displayName) {
+    if (!username || !email || !password || !confirmPassword) {
       setError('Please fill in all fields.');
+      return;
+    }
+
+    if (!username.trim()) {
+      setError('Please enter a username.');
       return;
     }
 
@@ -38,11 +43,15 @@ export default function Signup() {
     }
 
     setIsLoading(true);
-    const result = await signup(email, password, displayName);
+    const result = await signup(username, email, password);
     setIsLoading(false);
 
     if (result.success) {
-      navigate('/onboarding');
+      if (result.requiresEmailConfirmation) {
+        navigate('/verify-email');
+      } else {
+        navigate('/onboarding');
+      }
     } else {
       setError(result.error || 'Signup failed. Please try again.');
     }
@@ -77,21 +86,22 @@ export default function Signup() {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="displayName" className="block text-sm font-semibold text-gray-300 mb-2">
-                Display Name
+              <label htmlFor="username" className="block text-sm font-semibold text-gray-300 mb-2">
+                Username
               </label>
               <div className="relative">
                 <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
-                  id="displayName"
+                  id="username"
                   type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="input-field pl-12"
-                  placeholder="Your Name"
+                  placeholder="your_username"
                   required
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-1.5">This will be your unique username</p>
             </div>
 
             <div>

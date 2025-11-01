@@ -8,37 +8,47 @@ export default function Privacy() {
   const [showEmail, setShowEmail] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center space-x-3 mb-2">
+    <div className="min-h-screen">
+      <div className="relative overflow-hidden py-20 md:py-28">
+        {/* Animated Background Gradients */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-transparent to-purple-800/20 animate-gradient-shift" />
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'radial-gradient(circle at 30% 20%, rgba(168, 85, 247, 0.25) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(147, 51, 234, 0.25) 0%, transparent 50%)',
+        }} />
+        
+        {/* Floating Orbs */}
+        <div className="absolute top-20 left-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="flex items-center space-x-3 mb-2 animate-fade-in">
             <Shield className="w-8 h-8 text-white" />
             <h1 className="text-4xl font-bold text-white">Privacy Settings</h1>
           </div>
-          <p className="text-xl text-white/90">Manage your privacy and notification preferences</p>
+          <p className="text-xl text-white/90 animate-fade-in">Manage your privacy and notification preferences</p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-6">
-          <div className="bg-slate-800 rounded-xl p-6">
+          <div className="card">
             <div className="flex items-center space-x-3 mb-6">
-              <Eye className="w-6 h-6 text-emerald-400" />
+              <Eye className="w-6 h-6 text-purple-400" />
               <h2 className="text-2xl font-bold text-white">Profile Visibility</h2>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-slate-700">
+              <div className="flex items-center justify-between py-3 border-b border-purple-500/20">
                 <div className="flex-1">
                   <h3 className="text-white font-medium mb-1">Public Profile</h3>
-                  <p className="text-slate-400 text-sm">
+                  <p className="text-gray-400 text-sm">
                     Allow others to view your profile information
                   </p>
                 </div>
                 <button
                   onClick={() => setProfileVisibility(!profileVisibility)}
                   className={`relative w-14 h-8 rounded-full transition-colors ${
-                    profileVisibility ? 'bg-emerald-500' : 'bg-slate-600'
+                    profileVisibility ? 'bg-purple-500' : 'bg-gray-700'
                   }`}
                 >
                   <div
@@ -52,14 +62,14 @@ export default function Privacy() {
               <div className="flex items-center justify-between py-3">
                 <div className="flex-1">
                   <h3 className="text-white font-medium mb-1">Show Email Address</h3>
-                  <p className="text-slate-400 text-sm">
+                  <p className="text-gray-400 text-sm">
                     Display your email on your public profile
                   </p>
                 </div>
                 <button
                   onClick={() => setShowEmail(!showEmail)}
                   className={`relative w-14 h-8 rounded-full transition-colors ${
-                    showEmail ? 'bg-emerald-500' : 'bg-slate-600'
+                    showEmail ? 'bg-purple-500' : 'bg-gray-700'
                   }`}
                 >
                   <div
@@ -72,24 +82,24 @@ export default function Privacy() {
             </div>
           </div>
 
-          <div className="bg-slate-800 rounded-xl p-6">
+          <div className="card">
             <div className="flex items-center space-x-3 mb-6">
-              <Bell className="w-6 h-6 text-blue-400" />
+              <Bell className="w-6 h-6 text-purple-400" />
               <h2 className="text-2xl font-bold text-white">Notifications</h2>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-slate-700">
+              <div className="flex items-center justify-between py-3 border-b border-purple-500/20">
                 <div className="flex-1">
                   <h3 className="text-white font-medium mb-1">Email Notifications</h3>
-                  <p className="text-slate-400 text-sm">
+                  <p className="text-gray-400 text-sm">
                     Receive notifications via email
                   </p>
                 </div>
                 <button
                   onClick={() => setEmailNotifications(!emailNotifications)}
                   className={`relative w-14 h-8 rounded-full transition-colors ${
-                    emailNotifications ? 'bg-emerald-500' : 'bg-slate-600'
+                    emailNotifications ? 'bg-purple-500' : 'bg-gray-700'
                   }`}
                 >
                   <div
@@ -103,14 +113,14 @@ export default function Privacy() {
               <div className="flex items-center justify-between py-3">
                 <div className="flex-1">
                   <h3 className="text-white font-medium mb-1">Commission Updates</h3>
-                  <p className="text-slate-400 text-sm">
+                  <p className="text-gray-400 text-sm">
                     Get notified about commission status changes
                   </p>
                 </div>
                 <button
                   onClick={() => setCommissionUpdates(!commissionUpdates)}
                   className={`relative w-14 h-8 rounded-full transition-colors ${
-                    commissionUpdates ? 'bg-emerald-500' : 'bg-slate-600'
+                    commissionUpdates ? 'bg-purple-500' : 'bg-gray-700'
                   }`}
                 >
                   <div
@@ -123,26 +133,26 @@ export default function Privacy() {
             </div>
           </div>
 
-          <div className="bg-slate-800 rounded-xl p-6">
+          <div className="card">
             <div className="flex items-center space-x-3 mb-6">
-              <Lock className="w-6 h-6 text-red-400" />
+              <Lock className="w-6 h-6 text-purple-400" />
               <h2 className="text-2xl font-bold text-white">Security</h2>
             </div>
 
             <div className="space-y-4">
-              <div className="py-3 border-b border-slate-700">
+              <div className="py-3 border-b border-purple-500/20">
                 <h3 className="text-white font-medium mb-1">Change Password</h3>
-                <p className="text-slate-400 text-sm mb-3">
+                <p className="text-gray-400 text-sm mb-3">
                   Update your password to keep your account secure
                 </p>
-                <button className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                <button className="btn-secondary">
                   Change Password
                 </button>
               </div>
 
               <div className="py-3">
                 <h3 className="text-white font-medium mb-1">Delete Account</h3>
-                <p className="text-slate-400 text-sm mb-3">
+                <p className="text-gray-400 text-sm mb-3">
                   Permanently delete your account and all associated data
                 </p>
                 <button className="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded-lg text-sm transition-colors border border-red-500/30">
@@ -152,8 +162,8 @@ export default function Privacy() {
             </div>
           </div>
 
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-            <p className="text-blue-400 text-sm">
+          <div className="glass border border-purple-500/30 rounded-xl p-4">
+            <p className="text-purple-300 text-sm">
               <strong>Note:</strong> These are mock privacy settings for demonstration purposes. In a production
               environment, these settings would be persisted and enforced across the application.
             </p>

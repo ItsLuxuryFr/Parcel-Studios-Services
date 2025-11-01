@@ -1,0 +1,14 @@
+* [33m03e8e1e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32m2025-11-01-qvz1-NPDYs[m[33m)[m security: Add clean stripeConfig.ts with environment variables only
+* [33mecd1776[m Edit admin page layout to match image
+[31m|[m *   [33m35f79d7[m WIP on main: f31a62d security: Remove hardcoded Stripe API keys from stripeConfig.ts
+[31m|[m [32m|[m[33m\[m  
+[31m|[m [32m|[m * [33m77bf0f0[m index on main: f31a62d security: Remove hardcoded Stripe API keys from stripeConfig.ts
+[31m|[m [32m|[m[32m/[m  
+[31m|[m * [33mf31a62d[m security: Remove hardcoded Stripe API keys from stripeConfig.ts
+[31m|[m [33m|[m * [33m4f5b359[m[33m ([m[1;35mrefs/stash[m[33m)[m WIP on main: f31a62d security: Remove hardcoded Stripe API keys from stripeConfig.ts
+[31m|[m [33m|[m * [33m520e7ba[m[33m ([m[1;32mmain[m[33m)[m security: Remove hardcoded Stripe API keys from stripeConfig.ts
+[31m|[m [33m|[m[31m/[m  
+[31m|[m[31m/[m[33m|[m   
+* [33m|[m [33m90fb7ff[m[33m ([m[1;32m2025-11-01-cxep-NfLAr[m[33m)[m Added 20251018070833_add_rejection_reason_and_new_statuses.sql
+* [33m|[m [33m7fc2a40[m Added 20251018063444_add_admin_role_and_policies.sql
+* [33m|[m [33m8ec4250[m Updated Admin.tsx
